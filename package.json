@@ -1,0 +1,25 @@
+{
+  "name": "robot-server",
+  "version": "0.0.1",
+  "description": "Tool allowing JavaScripts scripts running in a browser to generate keyboard and mouse events at the operating system level, especially for automated tests.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/attester/robot-server.git"
+  },
+  "index": "index.js",
+  "bin": {
+    "robot-server": "bin/robot-server"
+  },
+  "scripts": {
+    "prepublish": "mvn clean package"
+  },
+  "author": "ariatemplates <contact@ariatemplates.com> (http://github.com/ariatemplates)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/attester/robot-server/issues"
+  },
+  "homepage": "https://github.com/attester/robot-server",
+  "dependencies": {
+    "which": "^1.0.5"
+  }
+}

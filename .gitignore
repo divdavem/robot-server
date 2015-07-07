@@ -1,0 +1,9 @@
+/target
+/.project
+/.idea
+/.classpath
+/.settings
+/dependency-reduced-pom.xml
+
+/node_modules
+/robot-server.jar
