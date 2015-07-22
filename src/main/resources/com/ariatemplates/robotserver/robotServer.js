@@ -90,7 +90,7 @@
         // wait some time for the browser to display the element
         setTimeout(function () {
             SeleniumJavaRobot.calibrate(div.offsetWidth - 2 * border, div.offsetHeight - 2 * border, function (response) {
-                div.parentElement.removeChild(div);
+                div.parentNode.removeChild(div);
                 var result = response.result;
                 if (response.success) {
                     result = {
