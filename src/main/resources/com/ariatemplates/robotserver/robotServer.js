@@ -16,20 +16,10 @@
 (function () {
     var SERVER_URL = '';
 
-    var HttpRequestObject = window.XMLHttpRequest;
-    var newHttpRequestObject;
-    if (HttpRequestObject) {
-        newHttpRequestObject = function () {
-            return new HttpRequestObject();
-        };
-    } else {
-        HttpRequestObject = window.ActiveXObject;
-        newHttpRequestObject = function () {
-            return new HttpRequestObject("Microsoft.XMLHTTP");
-        };
-    }
-
     var SeleniumJavaRobot = window.SeleniumJavaRobot = {};
+
+    var waitingCalls = {};
+    var curId = 0;
 
     var callCallback = function (curCallback, success, result) {
         if (typeof curCallback == "function") {
@@ -45,30 +35,29 @@
         }
     };
 
+    SeleniumJavaRobot._response = function (id, success, response) {
+        var info = waitingCalls[id];
+        if (info) {
+            delete waitingCalls[id];
+            info.script.parentNode.removeChild(info.script);
+            callCallback(info.callback, success, response);
+        }
+    };
+
     var slice = Array.prototype.slice;
     var createFunction = function (name, argsNumber) {
         return SeleniumJavaRobot[name] = function () {
             var data = JSON.stringify(slice.call(arguments, 0, argsNumber));
             var callback = arguments[argsNumber];
-
-            var xhr = newHttpRequestObject();
-            xhr.open('POST', SERVER_URL + "/" + name, true);
-            xhr.send(data);
-            xhr.onreadystatechange = function () {
-                if (xhr && xhr.readyState == 4) {
-                    // Considers 2xx and 304 as a success, anything else as an error
-                    var status = xhr.status, success = (status >= 200 && status < 300) || status == 304;
-                    var res = xhr.responseText;
-                    if (success) {
-                        callCallback(callback, true, JSON.parse(res));
-                    } else {
-                        callCallback(callback, false, (res || "Unknown error: " + status) + " when calling '"
-                                + SERVER_URL + "/" + name + "' with: " + data);
-                    }
-                    // clean the closure:
-                    data = xhr = callback = null;
-                }
+            curId++;
+            var id = curId;
+            var script = document.createElement("script");
+            script.src = SERVER_URL + "/" + name + "?id=" + curId + "&data=" + encodeURIComponent(data);
+            waitingCalls[id] = {
+                callback : callback,
+                script : script
             };
+            (document.head || document.getElementsByTagName("head")[0]).appendChild(script);
         };
     };
 

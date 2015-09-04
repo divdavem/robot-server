@@ -7,7 +7,7 @@ This is especially useful when writing tests for your application, to simulate
 actions from the user.
 
 It has the same API as the [Selenium Java Robot](https://github.com/attester/selenium-java-robot),
-but it does not use Selenium at all. It is implemented as a small HTTP server which listens for incoming XHR
+but it does not use Selenium at all. It is implemented as a small HTTP server which listens for incoming
 requests and executes the corresponding mouse and keyboard actions.
 
 ## Installing this tool

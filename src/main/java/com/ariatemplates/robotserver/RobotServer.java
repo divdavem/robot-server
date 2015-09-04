@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
 
 public class RobotServer {
@@ -158,15 +160,11 @@ public class RobotServer {
     class RobotServerHandler extends AbstractHandler {
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
             System.out.println("Serving " + target);
-            String origin = request.getHeader("Origin");
-            if (origin != null) {
-                response.setHeader("Access-Control-Allow-Origin", origin);
+            if (!("GET".equals(baseRequest.getMethod()))) {
+                response.sendError(405);
+                return;
             }
             if ("/robot".equals(target)) {
-                if (!("GET".equals(baseRequest.getMethod()))) {
-                    response.sendError(405);
-                    return;
-                }
                 String content = ROBOT_SERVER_SCRIPT.replace("var SERVER_URL = '';", "var SERVER_URL = '" + request.getRequestURL() + "';");
                 response.setStatus(200);
                 response.setContentType("application/javascript");
@@ -175,10 +173,6 @@ public class RobotServer {
                 writer.close();
                 return;
             } else if ("/".equals(target)) {
-                if (!("GET".equals(baseRequest.getMethod()))) {
-                    response.sendError(405);
-                    return;
-                }
                 response.setStatus(200);
                 response.setContentType("text/html");
                 PrintWriter writer = response.getWriter();
@@ -191,33 +185,30 @@ public class RobotServer {
                 response.sendError(404);
                 return;
             }
-            if (!("POST".equals(baseRequest.getMethod()))) {
-                response.sendError(405);
-                return;
-            }
+            Integer id = Integer.valueOf(baseRequest.getParameter("id"), 10);
+            String data = baseRequest.getParameter("data");
+            response.setContentType("application/javascript");
+            response.setStatus(200);
+            boolean success = true;
+            JsonElement result = null;
             try {
-                JsonReader reader = new JsonReader(request.getReader());
+                JsonReader reader = new JsonReader(new StringReader(data));
                 reader.beginArray();
-                JsonElement result = method.run(RobotServer.this, reader);
-                response.setStatus(200);
-                response.setContentType("application/json");
-                PrintWriter writer = response.getWriter();
-                if (result != null) {
-                    Gson gson = new Gson();
-                    writer.write(gson.toJson(result));
-                } else {
-                    writer.write("null");
-                }
-                writer.close();
+                result = method.run(RobotServer.this, reader);
                 reader.endArray();
                 reader.close();
             } catch (Exception e) {
-                response.setStatus(500);
-                PrintWriter writer = response.getWriter();
-                writer.write(e.getMessage());
-                writer.close();
-                return;
+                success = false;
+                result = new JsonPrimitive(e.getMessage() + " when executing " + target + " with data = " + data);
             }
+            PrintWriter writer = response.getWriter();
+            if (result != null) {
+                Gson gson = new Gson();
+                writer.write("SeleniumJavaRobot._response(" + id + "," + success + "," + gson.toJson(result) + ")");
+            } else {
+                writer.write("SeleniumJavaRobot._response(" + id + "," + success + ",null)");
+            }
+            writer.close();
         }
     }
 }
