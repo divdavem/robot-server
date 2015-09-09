@@ -52,7 +52,8 @@
             curId++;
             var id = curId;
             var script = document.createElement("script");
-            script.src = SERVER_URL + "/" + name + "?id=" + curId + "&data=" + encodeURIComponent(data);
+            script.src = SERVER_URL + "/" + name + "?id=" + curId + "&data=" + encodeURIComponent(data) + "&ts="
+                    + new Date().getTime();
             waitingCalls[id] = {
                 callback : callback,
                 script : script

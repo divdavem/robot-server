@@ -187,6 +187,11 @@ public class RobotServer {
             }
             Integer id = Integer.valueOf(baseRequest.getParameter("id"), 10);
             String data = baseRequest.getParameter("data");
+            // Prevents caching:
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Expires", "Tue, 01 Jan 1970 00:00:00 GMT");
+
             response.setContentType("application/javascript");
             response.setStatus(200);
             boolean success = true;
